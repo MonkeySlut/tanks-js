@@ -28,7 +28,7 @@ function Tank(tt, data, remote) {
         maxTurnSpeed: 0.035,
         aimAngle: MathUtil.degreesToRadians(0),
         firing: false,
-        fireRate: 5, // number of shots per sec
+        fireRate: 2, // number of shots per sec
         fireCooldown: 0,
         remote: remote,
         tankSprite: new Sprite(["center", "center"], {
