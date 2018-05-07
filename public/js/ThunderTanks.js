@@ -1,15 +1,16 @@
-var myObj = $.deparam.querystring();
-console.log(myObj);
+var mySessionId;
+
 if (typeof io != 'undefined') {
-    var multiplayerConn = io.connect('/' + myObj.room);
-	var karnavalConn = io.connect('http://127.0.0.1:8080/karnaval');
+    var multiplayerConn = io.connect('/');
+	var commandConn = io.connect('http://127.0.0.1:8080/command');
     multiplayerConn.on('connect', function() {
         console.log("connected to multiplayer server");
-        $('#session-id').text(multiplayerConn.id);
+        mySessionId = multiplayerConn.id;
+        $('#session-id').text(mySessionId);
         tt.alerts.connected();
     });
-    karnavalConn.on('connect', function() {
-        console.log('karnavalcon connected');
+    commandConn.on('connect', function() {
+        console.log('command server connected');
     })
 }
 var tt = (function(tt) {
@@ -221,7 +222,7 @@ var tt = (function(tt) {
             // launch the game
             tt.game.launch();
 
-            if (typeof multiplayerConn != 'undefined' && typeof karnavalConn != 'undefined') {
+            if (typeof multiplayerConn != 'undefined') {
                 multiplayerConn.on('add-tank', function (data) {
                     tt.addTank(data, data.id !== multiplayerConn.id);
                 });
@@ -236,9 +237,11 @@ var tt = (function(tt) {
                 multiplayerConn.on('remove-tank', function (id) {
                     tt.removeTank(id);
                 });
-                karnavalConn.on('action', function(data) {
-                    console.log('got karnaval action');
-                    _private.tanks[$('#session-id').text()].karnavalUpdate(data);
+                commandConn.on('action', function(data) {
+                    console.log('got command action');
+                    if (mySessionId && _private.tanks[mySessionId]) {
+                        _private.tanks[mySessionId].commandUpdate(data);
+                    }
                 });
             } else {
                 tt.alerts.addAlert('info','Click anywhere to deploy a tank.');

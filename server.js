@@ -14,22 +14,14 @@ console.log('Listening on port ' + port);
 
 /** Here be multiplayer dragons */
 
-var tanksRoomOne = {};
-var tanksRoomTwo = {};
+var tanksInRoom = {};
 
-var roomOne = io.of('/roomOne');
-roomOne.on('connection', function (socket) {
+var room = io.of('/');
+room.on('connection', function (socket) {
   console.log("new player connecting to roomOne", socket.id);
 
-  new Player(socket, tanksRoomOne, roomOne);
+  new Player(socket, tanksInRoom, room);
 });
-var roomTwo = io.of('/roomTwo');
-roomTwo.on('connection', function (socket) {
-  console.log("new player connecting to roomTwo", socket.id);
-
-  new Player(socket, tanksRoomTwo, roomTwo);
-});
-
 /** A server side instance of a Player */
 function Player(socket, tanks, room) {
   var SELF = this;

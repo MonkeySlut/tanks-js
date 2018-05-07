@@ -355,10 +355,8 @@ function Tank(tt, data, remote) {
         }
     }
 
-    this.karnavalUpdate = function(data) {
-        var rawData = data.data;
-        console.log(rawData);
-        switch (rawData.action) {
+    this.commandUpdate = function(data) {
+        switch (data.action) {
             case "W+":
                 this.keyDown_38();
                 break;
