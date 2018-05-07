@@ -1,5 +1,14 @@
 #controls {
 	margin: 0;
+	text-align: right;
+}
+
+#controls dt, #controls dd {
+	font-size: 20px;
+}
+
+#controls dd {
+	font-weight: 700;
 }
 
 .alerts {
@@ -18,4 +27,8 @@
 	width: 970px;
 	height: 546px; /* 16:9 */
 	border: #000 solid 1px;
+}
+
+.title-mid-one {
+	text-align: center
 }

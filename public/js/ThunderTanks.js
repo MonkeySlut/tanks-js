@@ -238,7 +238,7 @@ var tt = (function(tt) {
                     tt.removeTank(id);
                 });
                 commandConn.on('action', function(data) {
-                    console.log('got command action');
+                    // console.log('got command action ' + data.action);
                     if (mySessionId && _private.tanks[mySessionId]) {
                         _private.tanks[mySessionId].commandUpdate(data);
                     }
