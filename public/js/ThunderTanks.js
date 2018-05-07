@@ -207,6 +207,23 @@ var tt = (function(tt) {
         }
     };
 
+    tt.keyDown_13 = function() {
+        if (!_private.playerTankDeployed) {
+            _private.playerTankDeployed = true;
+
+            var randomX = Math.floor(Math.random() * 0.8 * tt.game.width) + tt.game.width/9;
+            var randomY = Math.floor(Math.random() * 0.8 * tt.game.height) + tt.game.height/9;
+
+            if (typeof multiplayerConn != 'undefined') {
+                multiplayerConn.emit('add-player-tank', {x: randomX, y:randomY});
+            } else {
+                tt.addTank({id: 'player', x: randomX, y:randomY}, false);
+            }
+
+            tt.alerts.clear();
+        }
+    };
+
     // init
     (function() {
         JSGameSoup.ready(function() {
