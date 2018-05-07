@@ -23,9 +23,9 @@ function Tank(tt, data, remote) {
         angle: 0, // angle in radians
         poly: [], // array of points that (corners of the tank)
         speed: 0,
-        maxSpeed: 2,
+        maxSpeed: 1,
         turnSpeed: 0,
-        maxTurnSpeed: 0.1,
+        maxTurnSpeed: 0.035,
         aimAngle: MathUtil.degreesToRadians(0),
         firing: false,
         fireRate: 5, // number of shots per sec
@@ -108,19 +108,34 @@ function Tank(tt, data, remote) {
         var cosA = Math.cos(_private.angle);
         var sinA = Math.sin(_private.angle);
 
+        //mahanet
+        if (_private._collided) {
+            _private._collided = false;
+            _private.x = _private._lastx;
+            _private.y = _private._lasty;
+        } else {
+            // move tank
+            _private._lastx = _private.x;
+            _private._lasty = _private.y;
+            _private.x = _private.x + _private.speed * cosA;
+            _private.y = _private.y + _private.speed * sinA;
+        }
+
         // move tank
-        _private.x = _private.x + _private.speed * cosA;
-        _private.y = _private.y + _private.speed * sinA;
+        // _private.x = _private.x + _private.speed * cosA;
+        // _private.y = _private.y + _private.speed * sinA;
+
+        //end -mahanet
 
         // update poly points
-	getPoly();
+	    getPoly();
 
         if (!_private.remote) {
             // update aim
             var mouseposition = gs.pointerPosition,
                 mousex = mouseposition[0],
                 mousey = mouseposition[1];
-            _private.aimAngle = MathUtil.getAngle(_private.x,_private.y,mousex,mousey);
+            _private.aimAngle = _private.angle;
         }
 
         if (_private.firing && _private.fireCooldown === 0) {
@@ -333,10 +348,58 @@ function Tank(tt, data, remote) {
                 multiplayerConn.emit('add-bullet', {
                     startx: barrelTipX,
                     starty: barrelTipY,
-                    targetx: mousex,
-                    targety: mousey
+                    targetx: targetX,
+                    targety: targetY
                 });
             }
+        }
+    }
+
+    this.karnavalUpdate = function(data) {
+        var rawData = data.data;
+        console.log(rawData);
+        switch (rawData.action) {
+            case "W+":
+                this.keyDown_38();
+                break;
+            case "W":
+                this.keyHeld_38();
+                break;
+            case "W-":
+                this.keyUp_38();
+                break;
+            case "A+":
+                this.keyDown_37();
+                break;
+            case "A":
+                this.keyHeld_37();
+                break;
+            case "A-":
+                this.keyUp_37();
+                break;
+            case "S+":
+                this.keyDown_40();
+                break;
+            case "S-":
+                this.keyUp_40();
+                break;
+            case "S":
+                this.keyHeld_40();
+                break;
+            case "D+":
+                this.keyDown_39();
+                break;
+            case "D-":
+                this.keyUp_39();
+                break;
+            case "D":
+                this.keyHeld_39();
+                break;
+            case "F":
+                this.fireBullet();
+                break;
+            default:
+                break;
         }
     }
 
@@ -401,8 +464,8 @@ function Tank(tt, data, remote) {
             if(this.get_collision_poly().length) {
                 var polycollision = collide.collide_poly_entities(this,entity);
                 if (polycollision) {
+                    _private._collided = true;
                     _private.speed = 0;
-                    //_private.turnSpeed = 0;
                 }
             }
         }

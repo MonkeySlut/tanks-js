@@ -2,13 +2,15 @@ var myObj = $.deparam.querystring();
 console.log(myObj);
 if (typeof io != 'undefined') {
     var multiplayerConn = io.connect('/' + myObj.room);
-	
+	var karnavalConn = io.connect('http://127.0.0.1:8080/karnaval');
     multiplayerConn.on('connect', function() {
         console.log("connected to multiplayer server");
-        $('#session-id').text(multiplayerConn.socket.sessionid);
-        tt.playSound('drummerTheme');
+        $('#session-id').text(multiplayerConn.id);
         tt.alerts.connected();
     });
+    karnavalConn.on('connect', function() {
+        console.log('karnavalcon connected');
+    })
 }
 var tt = (function(tt) {
     /** @type JSGameSoup */
@@ -213,19 +215,15 @@ var tt = (function(tt) {
             // add this instance of ThunderTanks
             tt.game.addEntity(tt);
 
-            // add an instance of the map
-
-			if(myObj.room === 'roomOne')
-				tt.addMap(TTMaps.PolyTest);
-			else
-				tt.addMap(TTMaps.Classic);
+            // add an instance of the map               
+            tt.addMap(TTMaps.Classic);
 
             // launch the game
             tt.game.launch();
 
-            if (typeof multiplayerConn != 'undefined') {
+            if (typeof multiplayerConn != 'undefined' && typeof karnavalConn != 'undefined') {
                 multiplayerConn.on('add-tank', function (data) {
-                    tt.addTank(data, data.id !== multiplayerConn.socket.sessionid);
+                    tt.addTank(data, data.id !== multiplayerConn.id);
                 });
                 multiplayerConn.on('add-bullet', function (data) {
                     // add bullet
@@ -238,21 +236,15 @@ var tt = (function(tt) {
                 multiplayerConn.on('remove-tank', function (id) {
                     tt.removeTank(id);
                 });
+                karnavalConn.on('action', function(data) {
+                    console.log('got karnaval action');
+                    _private.tanks[$('#session-id').text()].karnavalUpdate(data);
+                });
             } else {
-                tt.playSound('drummerTheme');
                 tt.alerts.addAlert('info','Click anywhere to deploy a tank.');
-                //tt.addTank({id:'demo', x: 100, y: 100}, false);
 
                 // enemy in the opposite corner
                 tt.addTank({id:'enemy1', x: tt.game.width - 100, y: tt.game.height - 100}, true);
-
-                /** Target Practice
-                for (var x = 50; x <= 500; x+=100){
-                    for (var y = 50; y <= 500; y += 100) {
-                        tt.addPlayer({id:'target'+x+y,x:x,y:y}, true);
-                    }
-                }
-                */
             }
 
         });

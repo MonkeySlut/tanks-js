@@ -7,34 +7,8 @@ var express = require('express')
   , host = (process.env.PORT && process.env.IP) ? process.env.IP : (process.env.PORT ? null : 'localhost')
   , io = require('socket.io').listen(app.listen(port));
 
-app.configure(function(){
-  // serve css, js, images folders as static files
-  app.use('/css', express.static(path.join(__dirname, 'css')));
-  app.use('/js', express.static(path.join(__dirname, 'js')));
-  app.use('/images', express.static(path.join(__dirname, 'images')));
-  app.use('/fonts', express.static(path.join(__dirname, 'fonts')));
-  app.use('/audio', express.static(path.join(__dirname, 'audio')));
-});
 
-app.get('/appcache',function(req,res) {
-  res.sendfile('appcache.manifest');
-});
-
-app.get('/credits', function(req, res){
-  res.sendfile('credits.html');
-});
-
-
-app.get('/', function(req, res){
-  res.sendfile('index.html');
-});
-app.get('/index.html', function(req, res){
-  res.sendfile('index.html');
-});
-
-app.get('/room.html', function(req, res){
-  res.sendfile('room.html');
-});
+app.use('/', express.static(path.join(__dirname, 'public')));
 
 console.log('Listening on port ' + port);
 

@@ -177,10 +177,6 @@ function Poly(tt, points) {
   var maxX = points[0][0];
   var maxY = points[0][1];
 
-  //this.draw = function(c, gs) {
-  //  this._draw(c);
-  //}
-
   this._draw = function(c) {
     c.strokeStyle = '#000000';
     c.fillStyle = c.createPattern(grey1,'repeat');
