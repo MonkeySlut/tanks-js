@@ -1,8 +1,9 @@
 var mySessionId;
 var currentStateDiv = $('#currentState');
+var updatedScore = $('#updatedScore');
 if (typeof io != 'undefined') {
     var multiplayerConn = io.connect('/room');
-	var commandConn = io.connect('http://127.0.0.1:8080/command');
+	var commandConn = io.connect('http://127.0.0.1:5050/command');
     multiplayerConn.on('connect', function() {
         console.log("connected to multiplayer server");
         mySessionId = multiplayerConn.id;
@@ -143,14 +144,15 @@ var tt = (function(tt) {
      * @param {int} targety The target y coordinate.
      * @returns {Bullet} An instance of a Bullet.
      */
-    tt.addBullet = function(startx, starty, targetx, targety) {
-        var b = new Bullet(tt, _private.bullets.length, startx, starty, targetx, targety);
+    tt.addBullet = function(startx, starty, targetx, targety, sessionId) {
+        var sessionIdId = sessionId || mySessionId;
+        var b = new Bullet(tt, _private.bullets.length, startx, starty, targetx, targety, 5, sessionIdId);
         _private.bullets.push(b);
         tt.game.addEntity(b);
         return b;
     }
 
-    tt.removeTank = function(id) {
+    tt.removeTank = function(id, session) {
         var tank = _private.tanks[id];
 
         // remove the tank from the game
@@ -168,7 +170,7 @@ var tt = (function(tt) {
 
               // tell server this tank is dead
               if (typeof multiplayerConn != 'undefined') {
-                  multiplayerConn.emit('tank-killed');
+                  multiplayerConn.emit('tank-killed', session);
               }
           }
         }
@@ -250,7 +252,7 @@ var tt = (function(tt) {
                 multiplayerConn.on('add-bullet', function (data) {
                     if (!_private.isGameinPause) {
                         // add bullet
-                        tt.addBullet(data.startx, data.starty, data.targetx, data.targety);
+                        tt.addBullet(data.startx, data.starty, data.targetx, data.targety, data.sessionIdOfInitator);
                     }
                 });
                 multiplayerConn.on('remote-tank-update', function (data) {
@@ -264,6 +266,11 @@ var tt = (function(tt) {
                         tt.removeTank(id);
                     }
                 });
+
+                multiplayerConn.on('update-score', function(newScore) {
+                    updatedScore.text(JSON.stringify(newScore));
+                });
+
                 multiplayerConn.on('admin-reset', function() {
                     console.log('got reset');
                     currentStateDiv.text('Go Go Go!');

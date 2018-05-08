@@ -15,12 +15,11 @@ console.log('Listening on port ' + port);
 /** Here be multiplayer dragons */
 
 var tanksInRoom = {};
-
+var players = [];
 var room = io.of('/room');
 room.on('connection', function (socket) {
   console.log("new player connecting to roomOne", socket.id);
-
-  new Player(socket, tanksInRoom, room);
+  players.push({ player: new Player(socket, tanksInRoom, room), id: socket.id });
 });
 
 var admin = io.of('/admin');
@@ -106,10 +105,18 @@ function Player(socket, tanks, room) {
   });
 
   // when a tank is killed, send data to all remotes
-  _private.socket.on('tank-killed', function () {
+  _private.socket.on('tank-killed', function (session) {
     SELF.score.deaths++;
-    console.log('tank: ' + SELF.id);
-    console.log(SELF.score);
+    var foundPlayerIndex = players.findIndex(element => element.id === session);
+    if (foundPlayerIndex != -1) {
+      players[foundPlayerIndex].player.score.kills++;
+    }
+    var toSendScore = players.map(item => {
+      return { player: item.id, score: item.player.score };
+    });
+    room.emit('update-score', toSendScore);
+    // console.log('tank: ' + SELF.id);
+    // console.log(SELF.score);
     //console.log("tank-killed");
     _events.removeTank();
   });
@@ -123,6 +130,10 @@ function Player(socket, tanks, room) {
 
   /* when a player disconnects */
   _private.socket.on('disconnect', function () {
+    var foundIndexToDel = players.findIndex(element => element.id === SELF.id);
+    if (foundIndexToDel != -1) {
+      players.splice(foundIndexToDel,1);
+    }
     //console.log("player disconnected " + SELF.id);
     // if this player had a tank, remove it
     if (tanks[SELF.id]) {

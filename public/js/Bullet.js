@@ -1,4 +1,4 @@
-function Bullet(tt, bulletIndex, startx, starty, targetx, targety, speed) {
+function Bullet(tt, bulletIndex, startx, starty, targetx, targety, speed, sessionIdOfInitator) {
     var SELF = this;
 
     /** @type ThunderTanks */
@@ -7,6 +7,8 @@ function Bullet(tt, bulletIndex, startx, starty, targetx, targety, speed) {
     /** @type JSGameSoup */
     this.game = tt.game;
 
+    this.sessionIdOfInitator = sessionIdOfInitator;
+    
     var _private = {
         bulletIndex: bulletIndex,
         x: startx || this.game.width/2,

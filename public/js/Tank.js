@@ -341,7 +341,7 @@ function Tank(tt, data, remote) {
                 targetX = _private.x + (_private.length*2) * Math.cos(_private.aimAngle),
                 targetY = _private.y + (_private.length*2) * Math.sin(_private.aimAngle);
 
-            tt.addBullet(barrelTipX,barrelTipY,targetX,targetY);
+            var returnedBullet = tt.addBullet(barrelTipX,barrelTipY,targetX,targetY);
 
             // send bullets to remote players
             if (!_private.remote && typeof multiplayerConn != 'undefined') {
@@ -349,7 +349,8 @@ function Tank(tt, data, remote) {
                     startx: barrelTipX,
                     starty: barrelTipY,
                     targetx: targetX,
-                    targety: targetY
+                    targety: targetY,
+                    sessionIdOfInitator: returnedBullet.sessionIdOfInitator
                 });
             }
         }
@@ -419,8 +420,8 @@ function Tank(tt, data, remote) {
       };
     }
 
-    this.kill = function() {
-        this.tt.removeTank(SELF.id);
+    this.kill = function(session) {
+        this.tt.removeTank(SELF.id, session);
     }
 
     /** True if this is a remote player's tank */
@@ -455,7 +456,7 @@ function Tank(tt, data, remote) {
     this.collide_aabb = function(entity, result) {
         if (entity instanceof Bullet) {
             if (typeof multiplayerConn === 'undefined' || !_private.remote) {
-                SELF.kill();
+                SELF.kill(entity.sessionIdOfInitator);
             }
         } else if (entity instanceof Block || entity instanceof Poly || entity instanceof Tank) {
             // for some reason tanks are getting collision checks before they have dimensions, which causes errors
