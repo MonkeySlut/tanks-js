@@ -42,7 +42,10 @@ function Player(socket, tanks, room) {
   var SELF = this;
 
   this.id = socket.id;
-
+  this.score = {
+    kills: 0,
+    deaths: 0
+  };
   var _private = {
     socket: socket
   }
@@ -104,6 +107,9 @@ function Player(socket, tanks, room) {
 
   // when a tank is killed, send data to all remotes
   _private.socket.on('tank-killed', function () {
+    SELF.score.deaths++;
+    console.log('tank: ' + SELF.id);
+    console.log(SELF.score);
     //console.log("tank-killed");
     _events.removeTank();
   });
