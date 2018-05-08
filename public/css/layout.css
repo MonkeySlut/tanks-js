@@ -30,5 +30,13 @@
 }
 
 .title-mid-one {
-	text-align: center
+	text-align: center;
+}
+
+.admin-green {
+	color: green;
+}
+
+.admin-red {
+	color: red;
 }

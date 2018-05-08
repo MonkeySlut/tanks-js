@@ -16,11 +16,26 @@ console.log('Listening on port ' + port);
 
 var tanksInRoom = {};
 
-var room = io.of('/');
+var room = io.of('/room');
 room.on('connection', function (socket) {
   console.log("new player connecting to roomOne", socket.id);
 
   new Player(socket, tanksInRoom, room);
+});
+
+var admin = io.of('/admin');
+admin.on('connection', function(socket) {
+  console.log('connected to admin');
+
+  socket.on('reset', function(data) {
+    room.emit('admin-reset', data);
+  });
+  socket.on('pause', function() {
+    room.emit('admin-pause');
+  });
+  socket.on('resume', function() {
+    room.emit('admin-resume');
+  });
 });
 /** A server side instance of a Player */
 function Player(socket, tanks, room) {

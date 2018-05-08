@@ -1,7 +1,7 @@
 var mySessionId;
-
+var currentStateDiv = $('#currentState');
 if (typeof io != 'undefined') {
-    var multiplayerConn = io.connect('/');
+    var multiplayerConn = io.connect('/room');
 	var commandConn = io.connect('http://127.0.0.1:8080/command');
     multiplayerConn.on('connect', function() {
         console.log("connected to multiplayer server");
@@ -39,7 +39,9 @@ var tt = (function(tt) {
         /** @type Array */
         bullets: [],
 
-        playerTankDeployed: false
+        playerTankDeployed: false,
+
+        isGameinPause: false
     };
 
     /**
@@ -241,22 +243,51 @@ var tt = (function(tt) {
 
             if (typeof multiplayerConn != 'undefined') {
                 multiplayerConn.on('add-tank', function (data) {
-                    tt.addTank(data, data.id !== multiplayerConn.id);
+                    if (!_private.isGameinPause) {
+                        tt.addTank(data, data.id !== multiplayerConn.id);
+                    }
                 });
                 multiplayerConn.on('add-bullet', function (data) {
-                    // add bullet
-                    tt.addBullet(data.startx, data.starty, data.targetx, data.targety);
+                    if (!_private.isGameinPause) {
+                        // add bullet
+                        tt.addBullet(data.startx, data.starty, data.targetx, data.targety);
+                    }
                 });
                 multiplayerConn.on('remote-tank-update', function (data) {
-                    // update tank
-                    _private.tanks[data.id].remoteUpdate(data);
+                    if (!_private.isGameinPause) {
+                        // update tank
+                        _private.tanks[data.id].remoteUpdate(data);
+                    }
                 });
                 multiplayerConn.on('remove-tank', function (id) {
-                    tt.removeTank(id);
+                    if (!_private.isGameinPause) {
+                        tt.removeTank(id);
+                    }
+                });
+                multiplayerConn.on('admin-reset', function() {
+                    console.log('got reset');
+                    currentStateDiv.text('Go Go Go!');
+                    currentStateDiv.addClass('admin-green');
+                    currentStateDiv.removeClass('admin-red');
+                    _private.isGameinPause = false;
+                });
+                multiplayerConn.on('admin-pause', function() {
+                    console.log('got pause');
+                    currentStateDiv.text('Paused!');
+                    currentStateDiv.addClass('admin-red');
+                    currentStateDiv.removeClass('admin-green');
+                    _private.isGameinPause = true;
+                });
+                multiplayerConn.on('admin-resume', function() {
+                    console.log('got resume');
+                    currentStateDiv.text('Resumed!');
+                    currentStateDiv.addClass('admin-green');
+                    currentStateDiv.removeClass('admin-red');
+                    _private.isGameinPause = false;
                 });
                 commandConn.on('action', function(data) {
                     // console.log('got command action ' + data.action);
-                    if (mySessionId && _private.tanks[mySessionId]) {
+                    if (mySessionId && _private.tanks[mySessionId] && !_private.isGameinPause) {
                         _private.tanks[mySessionId].commandUpdate(data);
                     }
                 });
