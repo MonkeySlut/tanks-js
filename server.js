@@ -28,6 +28,18 @@ admin.on('connection', function(socket) {
 
   socket.on('reset', function(data) {
     room.emit('admin-reset', data);
+    players.forEach(x => {
+      x.player.score = {
+        kills: 0,
+        deaths: 0
+      };
+    });
+    setTimeout(() => {
+      var toSendScore = players.map(item => {
+        return { player: item.id, score: item.player.score };
+      });
+      room.emit('admin-finishgame', {score: toSendScore});
+    }, 120000)
   });
   socket.on('pause', function() {
     room.emit('admin-pause');

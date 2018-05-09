@@ -1,6 +1,9 @@
 var mySessionId;
 var currentStateDiv = $('#currentState');
 var updatedScore = $('#updatedScore');
+var finishedGame = $('#finishedGame');
+var timertimer = $('#timertimer');
+
 if (typeof io != 'undefined') {
     var multiplayerConn = io.connect('/room');
 	var commandConn = io.connect('http://127.0.0.1:5050/command');
@@ -274,6 +277,28 @@ var tt = (function(tt) {
                 multiplayerConn.on('admin-reset', function() {
                     console.log('got reset');
                     currentStateDiv.text('Go Go Go!');
+                    var hasFinished = false;
+                    var startTimer = function(duration, display) {
+                        var timer = duration, minutes, seconds;
+                        setInterval(function () {
+                            if (!_private.isGameinPause) {
+                                minutes = parseInt(timer / 60, 10)
+                                seconds = parseInt(timer % 60, 10);
+                        
+                                minutes = minutes < 10 ? "0" + minutes : minutes;
+                                seconds = seconds < 10 ? "0" + seconds : seconds;
+                                display.text(`${minutes}: ${seconds}`);
+                        
+                                if (--timer < 0 && !hasFinished) {
+                                    timer = duration;
+                                    hasFinished = true;
+                                }
+                            }
+                        
+                        }, 1000);
+                    };                 
+                    var twoMin = 60 * 2;
+                    startTimer(twoMin, timertimer);
                     currentStateDiv.addClass('admin-green');
                     currentStateDiv.removeClass('admin-red');
                     _private.isGameinPause = false;
@@ -292,6 +317,20 @@ var tt = (function(tt) {
                     currentStateDiv.removeClass('admin-red');
                     _private.isGameinPause = false;
                 });
+
+                multiplayerConn.on('admin-finishgame', function() {
+                    _private.isGameinPause = true;
+                    commandConn.emit('generateGif');
+                });
+
+                commandConn.on('gif' , function(gifs) {
+                    // todo: lafa, show gifs, show score
+                    // finishedGame.text(JSON.stringify(data.score));
+                    gifs.forEach(gif => {
+                        return
+                    })
+                });
+
                 commandConn.on('action', function(data) {
                     // console.log('got command action ' + data.action);
                     if (mySessionId && _private.tanks[mySessionId] && !_private.isGameinPause) {
